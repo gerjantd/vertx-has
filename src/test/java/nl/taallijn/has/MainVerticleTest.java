@@ -1,4 +1,4 @@
-package io.vertx.starter;
+package nl.taallijn.has;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
