@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 export LAUNCHER="io.vertx.core.Launcher"
-export VERTICLE="io.vertx.starter.MainVerticle"
+export VERTICLE="nl.taallijn.has.MainVerticle"
 export CMD="mvn compile"
 export VERTX_CMD="run"
 
@@ -11,4 +11,5 @@ java \
   $LAUNCHER $VERTX_CMD $VERTICLE \
   --redeploy="src/main/**/*" --on-redeploy="$CMD" \
   --launcher-class=$LAUNCHER \
+  --java-opts="-Dhsqldb.reconfig_logging=false" \
   $@
