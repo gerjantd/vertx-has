@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class MainVerticle extends AbstractVerticle {
 
   private static final String SQL_CREATE_PAGES_TABLE = "create table if not exists Pages (Id integer identity primary key, Name varchar(255) unique, Content clob)";
-  private static final String SQL_GET_PAGE = "select Id, Content from Pages where Name = ?"; // <1>
+  private static final String SQL_GET_PAGE = "select Id, Content from Pages where Name = ?";
   private static final String SQL_CREATE_PAGE = "insert into Pages values (NULL, ?, ?)";
   private static final String SQL_SAVE_PAGE = "update Pages set Content = ? where Id = ?";
   private static final String SQL_ALL_PAGES = "select Name from Pages";
@@ -244,7 +244,7 @@ public class MainVerticle extends AbstractVerticle {
 
   public void anotherStart(Future<Void> startFuture) throws Exception {
     Future<Void> steps = prepareDatabase().compose(v -> startHttpServer());
-    steps.setHandler(ar -> {  // <1>
+    steps.setHandler(ar -> {
       if (ar.succeeded()) {
         startFuture.complete();
       } else {
