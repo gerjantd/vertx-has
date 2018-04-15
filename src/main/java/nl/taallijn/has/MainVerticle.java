@@ -25,53 +25,46 @@ import io.vertx.ext.web.templ.FreeMarkerTemplateEngine;
 
 public class MainVerticle extends AbstractVerticle {
 
+	// HSQLDB
 //	private static final String SQL_CREATE_PAGES_TABLE = "create table if not exists Pages (Id integer identity primary key, Name varchar(255) unique, Content clob)";
-//	private static final String PSQL_CREATE_PAGES_TABLE = "CREATE TABLE Pages (Id bigint NOT NULL, Name character varying(255), Content character varying(1023), CONSTRAINT Pages_pkey PRIMARY KEY (Id)) WITH (OIDS=FALSE); ALTER TABLE Pages OWNER TO has;";
-	private static final String PSQL_CREATE_PAGES_TABLE = "CREATE TABLE IF NOT EXISTS Pages (Id bigint, Name character varying(255), Content character varying(1023)); ALTER TABLE Pages OWNER TO has;";
+//	private static final String SQL_GET_PAGE = "select Id, Content from Pages where Name = ?";
+//	private static final String SQL_CREATE_PAGE = "insert into Pages values (NULL, ?, ?)";
+//	private static final String SQL_SAVE_PAGE = "update Pages set Content = ? where Id = ?";
+//	private static final String SQL_ALL_PAGES = "select Name from Pages";
+//	private static final String SQL_DELETE_PAGE = "delete from Pages where Id = ?";
+//	private JDBCClient dbClient;
+	
+	// PostgreSQL
+	private static final String SQL_CREATE_PAGES_TABLE = "CREATE TABLE IF NOT EXISTS Pages (Id bigint, Name character varying(255), Content character varying(1023)); ALTER TABLE Pages OWNER TO has;";
 	private static final String SQL_GET_PAGE = "select Id, Content from Pages where Name = ?";
 	private static final String SQL_CREATE_PAGE = "insert into Pages values (NULL, ?, ?)";
 	private static final String SQL_SAVE_PAGE = "update Pages set Content = ? where Id = ?";
 	private static final String SQL_ALL_PAGES = "select Name from Pages";
 	private static final String SQL_DELETE_PAGE = "delete from Pages where Id = ?";
-//	private JDBCClient dbClient;
-	private SQLClient postgreSQLClient;
+	private SQLClient dbClient;
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainVerticle.class);
 
 	private Future<Void> prepareDatabase() {
 		Future<Void> future = Future.future();
 
-//		dbClient = JDBCClient.createShared(vertx, new JsonObject().put("url", "jdbc:hsqldb:file:db/wiki")
-//				.put("driver_class", "org.hsqldb.jdbcDriver").put("max_pool_size", 30));
-//
-//		dbClient.getConnection(ar -> {
-//			if (ar.failed()) {
-//				LOGGER.error("Could not open a database connection", ar.cause());
-//				future.fail(ar.cause());
-//			} else {
-//				SQLConnection connection = ar.result();
-//				connection.execute(SQL_CREATE_PAGES_TABLE, create -> {
-//					connection.close();
-//					if (create.failed()) {
-//						LOGGER.error("Database preparation error", create.cause());
-//						future.fail(create.cause());
-//					} else {
-//						future.complete();
-//					}
-//				});
-//			}
-//		});
-
-		JsonObject postgreSQLClientConfig = new JsonObject().put("host", "127.0.0.1").put("username", "has")
+		// HSQLDB
+//		JsonObject dbClientConfig = new JsonObject().put("url", "jdbc:hsqldb:file:db/wiki")
+//				.put("driver_class", "org.hsqldb.jdbcDriver").put("max_pool_size", 30);
+//		dbClient = JDBCClient.createShared(vertx, dbClientConfig);
+		
+		// PostgreSQL
+		JsonObject dbClientConfig = new JsonObject().put("host", "127.0.0.1").put("username", "has")
 				.put("password", "has").put("database", "has");
-		postgreSQLClient = PostgreSQLClient.createShared(vertx, postgreSQLClientConfig);
+		dbClient = PostgreSQLClient.createShared(vertx, dbClientConfig);
 
-		postgreSQLClient.getConnection(ar -> {
+		dbClient.getConnection(ar -> {
 			if (ar.failed()) {
 				LOGGER.error("Could not open a database connection", ar.cause());
 				future.fail(ar.cause());
 			} else {
 				SQLConnection connection = ar.result();
-				connection.execute(PSQL_CREATE_PAGES_TABLE, create -> {
+				connection.execute(SQL_CREATE_PAGES_TABLE, create -> {
 					connection.close();
 					if (create.failed()) {
 						LOGGER.error("Database preparation error", create.cause());
@@ -82,6 +75,7 @@ public class MainVerticle extends AbstractVerticle {
 				});
 			}
 		});
+
 
 		return future;
 	}
@@ -113,8 +107,7 @@ public class MainVerticle extends AbstractVerticle {
 
 	private void pageDeletionHandler(RoutingContext context) {
 		String id = context.request().getParam("id");
-//		dbClient.getConnection(car -> {
-		postgreSQLClient.getConnection(car -> {
+		dbClient.getConnection(car -> {
 			if (car.succeeded()) {
 				SQLConnection connection = car.result();
 				connection.updateWithParams(SQL_DELETE_PAGE, new JsonArray().add(id), res -> {
@@ -147,8 +140,7 @@ public class MainVerticle extends AbstractVerticle {
 	private final FreeMarkerTemplateEngine templateEngine = FreeMarkerTemplateEngine.create();
 
 	private void indexHandler(RoutingContext context) {
-//		dbClient.getConnection(car -> {
-		postgreSQLClient.getConnection(car -> {
+		dbClient.getConnection(car -> {
 			if (car.succeeded()) {
 				SQLConnection connection = car.result();
 				connection.query(SQL_ALL_PAGES, res -> {
@@ -185,8 +177,7 @@ public class MainVerticle extends AbstractVerticle {
 		String markdown = context.request().getParam("markdown");
 		boolean newPage = "yes".equals(context.request().getParam("newPage"));
 
-//		dbClient.getConnection(car -> {
-		postgreSQLClient.getConnection(car -> {
+		dbClient.getConnection(car -> {
 			if (car.succeeded()) {
 				SQLConnection connection = car.result();
 				String sql = newPage ? SQL_CREATE_PAGE : SQL_SAVE_PAGE;
@@ -217,8 +208,7 @@ public class MainVerticle extends AbstractVerticle {
 	private void pageRenderingHandler(RoutingContext context) {
 		String page = context.request().getParam("page");
 
-//		dbClient.getConnection(car -> {
-		postgreSQLClient.getConnection(car -> {
+		dbClient.getConnection(car -> {
 			if (car.succeeded()) {
 
 				SQLConnection connection = car.result();
