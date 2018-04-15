@@ -1,5 +1,6 @@
 package nl.taallijn.has;
 
+/*
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -8,9 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.rjeschke.txtmark.Processor;
+*/
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
+/*
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -24,9 +28,11 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.templ.FreeMarkerTemplateEngine;
+*/
 
 public class MainVerticle extends AbstractVerticle {
 
+/*	
 	// HSQLDB
 	private static final String SQL_CREATE_PAGES_TABLE = "create table if not exists Pages (Id integer identity primary key, Name varchar(255) unique, Content clob)";
 	private static final String SQL_GET_PAGE = "select Id, Content from Pages where Name = ?";
@@ -35,15 +41,21 @@ public class MainVerticle extends AbstractVerticle {
 	private static final String SQL_ALL_PAGES = "select Name from Pages";
 	private static final String SQL_DELETE_PAGE = "delete from Pages where Id = ?";
 	private JDBCClient dbClient;
-	
+
 	// PostgreSQL
-//	private static final String SQL_CREATE_PAGES_TABLE = "CREATE TABLE IF NOT EXISTS Pages (Id serial, Name character varying(255), Content text); ALTER TABLE Pages OWNER TO has;";
-//	private static final String SQL_GET_PAGE = "select Id, Content from Pages where Name = ?";
-//	private static final String SQL_CREATE_PAGE = "insert into Pages (Name, Content) values (?, ?)";
-//	private static final String SQL_SAVE_PAGE = "update Pages set Content = ? where Id = ?";
-//	private static final String SQL_ALL_PAGES = "select Name from Pages";
-//	private static final String SQL_DELETE_PAGE = "delete from Pages where Id = ?";
-//	private SQLClient dbClient;
+	// private static final String SQL_CREATE_PAGES_TABLE = "CREATE TABLE IF NOT
+	// EXISTS Pages (Id serial, Name character varying(255), Content text); ALTER
+	// TABLE Pages OWNER TO has;";
+	// private static final String SQL_GET_PAGE = "select Id, Content from Pages
+	// where Name = ?";
+	// private static final String SQL_CREATE_PAGE = "insert into Pages (Name,
+	// Content) values (?, ?)";
+	// private static final String SQL_SAVE_PAGE = "update Pages set Content = ?
+	// where Id = ?";
+	// private static final String SQL_ALL_PAGES = "select Name from Pages";
+	// private static final String SQL_DELETE_PAGE = "delete from Pages where Id =
+	// ?";
+	// private SQLClient dbClient;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainVerticle.class);
 
@@ -54,11 +66,12 @@ public class MainVerticle extends AbstractVerticle {
 		JsonObject dbClientConfig = new JsonObject().put("url", "jdbc:hsqldb:file:db/wiki")
 				.put("driver_class", "org.hsqldb.jdbcDriver").put("max_pool_size", 30);
 		dbClient = JDBCClient.createShared(vertx, dbClientConfig);
-		
+
 		// PostgreSQL
-//		JsonObject dbClientConfig = new JsonObject().put("host", "127.0.0.1").put("username", "has")
-//				.put("password", "has").put("database", "has");
-//		dbClient = PostgreSQLClient.createShared(vertx, dbClientConfig);
+		// JsonObject dbClientConfig = new JsonObject().put("host",
+		// "127.0.0.1").put("username", "has")
+		// .put("password", "has").put("database", "has");
+		// dbClient = PostgreSQLClient.createShared(vertx, dbClientConfig);
 
 		dbClient.getConnection(ar -> {
 			if (ar.failed()) {
@@ -77,7 +90,6 @@ public class MainVerticle extends AbstractVerticle {
 				});
 			}
 		});
-
 
 		return future;
 	}
@@ -250,10 +262,35 @@ public class MainVerticle extends AbstractVerticle {
 		});
 	}
 
+	// @Override
+	// public void start(Future<Void> startFuture) throws Exception {
+	// Future<Void> steps = prepareDatabase().compose(v -> startHttpServer());
+	// steps.setHandler(startFuture.completer());
+	// }
+*/
+	
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
-		Future<Void> steps = prepareDatabase().compose(v -> startHttpServer());
-		steps.setHandler(startFuture.completer());
+
+		Future<String> dbVerticleDeployment = Future.future();
+		vertx.deployVerticle(new WikiDatabaseVerticle(), dbVerticleDeployment.completer());
+
+		dbVerticleDeployment.compose(id -> {
+
+			Future<String> httpVerticleDeployment = Future.future();
+			vertx.deployVerticle("nl.taallijn.has.HttpServerVerticle",
+					new DeploymentOptions().setInstances(2),
+					httpVerticleDeployment.completer());
+
+			return httpVerticleDeployment;
+
+		}).setHandler(ar -> {
+			if (ar.succeeded()) {
+				startFuture.complete();
+			} else {
+				startFuture.fail(ar.cause());
+			}
+		});
 	}
 
 }
