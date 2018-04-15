@@ -1,5 +1,16 @@
 package nl.taallijn.has;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
@@ -8,16 +19,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Collectors;
 
 public class WikiDatabaseVerticle extends AbstractVerticle {
 
@@ -48,7 +49,8 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 			// HSQLDB
 			queriesInputStream = getClass().getResourceAsStream("/db-queries.properties");
 			// POSTGRESQL
-//			queriesInputStream = getClass().getResourceAsStream("/db-queries-postgresql.properties");			
+			// queriesInputStream =
+			// getClass().getResourceAsStream("/db-queries-postgresql.properties");
 		}
 
 		Properties queriesProps = new Properties();
@@ -80,12 +82,15 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 				.put("password", config().getString(CONFIG_WIKIDB_JDBC_PASSWORD, "")));
 
 		// POSTGRESQL
-//		dbClient = JDBCClient.createShared(vertx, new JsonObject()
-//				.put("url", config().getString(CONFIG_WIKIDB_JDBC_URL, "jdbc:postgresql://127.0.0.1/has"))
-//				.put("driver_class", config().getString(CONFIG_WIKIDB_JDBC_DRIVER_CLASS, "org.postgresql.Driver"))
-//				.put("max_pool_size", config().getInteger(CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE, 30))
-//				.put("user", config().getString(CONFIG_WIKIDB_JDBC_USER, "has"))
-//				.put("password", config().getString(CONFIG_WIKIDB_JDBC_PASSWORD, "has")));
+		// dbClient = JDBCClient.createShared(vertx, new JsonObject()
+		// .put("url", config().getString(CONFIG_WIKIDB_JDBC_URL,
+		// "jdbc:postgresql://127.0.0.1/has"))
+		// .put("driver_class", config().getString(CONFIG_WIKIDB_JDBC_DRIVER_CLASS,
+		// "org.postgresql.Driver"))
+		// .put("max_pool_size", config().getInteger(CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE,
+		// 30))
+		// .put("user", config().getString(CONFIG_WIKIDB_JDBC_USER, "has"))
+		// .put("password", config().getString(CONFIG_WIKIDB_JDBC_PASSWORD, "has")));
 
 		dbClient.getConnection(ar -> {
 			if (ar.failed()) {
@@ -141,40 +146,6 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 		default:
 			message.fail(ErrorCodes.BAD_ACTION.ordinal(), "Bad action: " + action);
 		}
-	}
-
-	private void _fetchAllPages(Message<JsonObject> message) {
-		// tag::query-with-connection[]
-		dbClient.getConnection(car -> {
-			if (car.succeeded()) {
-				SQLConnection connection = car.result();
-				connection.query(sqlQueries.get(SqlQuery.ALL_PAGES), res -> {
-					connection.close();
-					if (res.succeeded()) {
-						List<String> pages = res.result().getResults().stream().map(json -> json.getString(0)).sorted()
-								.collect(Collectors.toList());
-						message.reply(new JsonObject().put("pages", new JsonArray(pages)));
-					} else {
-						reportQueryError(message, res.cause());
-					}
-				});
-			} else {
-				reportQueryError(message, car.cause());
-			}
-		});
-		// end::query-with-connection[]
-
-		// tag::query-simple-oneshot[]
-		dbClient.query(sqlQueries.get(SqlQuery.ALL_PAGES), res -> {
-			if (res.succeeded()) {
-				List<String> pages = res.result().getResults().stream().map(json -> json.getString(0)).sorted()
-						.collect(Collectors.toList());
-				message.reply(new JsonObject().put("pages", new JsonArray(pages)));
-			} else {
-				reportQueryError(message, res.cause());
-			}
-		});
-		// end::query-simple-oneshot[]
 	}
 
 	private void fetchAllPages(Message<JsonObject> message) {
