@@ -15,8 +15,10 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.asyncsql.PostgreSQLClient;
+// HSQLDB
 import io.vertx.ext.jdbc.JDBCClient;
-import io.vertx.ext.sql.SQLClient;
+// PostgreSQL
+//import io.vertx.ext.sql.SQLClient;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -26,22 +28,22 @@ import io.vertx.ext.web.templ.FreeMarkerTemplateEngine;
 public class MainVerticle extends AbstractVerticle {
 
 	// HSQLDB
-//	private static final String SQL_CREATE_PAGES_TABLE = "create table if not exists Pages (Id integer identity primary key, Name varchar(255) unique, Content clob)";
-//	private static final String SQL_GET_PAGE = "select Id, Content from Pages where Name = ?";
-//	private static final String SQL_CREATE_PAGE = "insert into Pages values (NULL, ?, ?)";
-//	private static final String SQL_SAVE_PAGE = "update Pages set Content = ? where Id = ?";
-//	private static final String SQL_ALL_PAGES = "select Name from Pages";
-//	private static final String SQL_DELETE_PAGE = "delete from Pages where Id = ?";
-//	private JDBCClient dbClient;
-	
-	// PostgreSQL
-	private static final String SQL_CREATE_PAGES_TABLE = "CREATE TABLE IF NOT EXISTS Pages (Id bigint, Name character varying(255), Content character varying(1023)); ALTER TABLE Pages OWNER TO has;";
+	private static final String SQL_CREATE_PAGES_TABLE = "create table if not exists Pages (Id integer identity primary key, Name varchar(255) unique, Content clob)";
 	private static final String SQL_GET_PAGE = "select Id, Content from Pages where Name = ?";
 	private static final String SQL_CREATE_PAGE = "insert into Pages values (NULL, ?, ?)";
 	private static final String SQL_SAVE_PAGE = "update Pages set Content = ? where Id = ?";
 	private static final String SQL_ALL_PAGES = "select Name from Pages";
 	private static final String SQL_DELETE_PAGE = "delete from Pages where Id = ?";
-	private SQLClient dbClient;
+	private JDBCClient dbClient;
+	
+	// PostgreSQL
+//	private static final String SQL_CREATE_PAGES_TABLE = "CREATE TABLE IF NOT EXISTS Pages (Id bigint, Name character varying(255), Content character varying(1023)); ALTER TABLE Pages OWNER TO has;";
+//	private static final String SQL_GET_PAGE = "select Id, Content from Pages where Name = ?";
+//	private static final String SQL_CREATE_PAGE = "insert into Pages values (NULL, ?, ?)";
+//	private static final String SQL_SAVE_PAGE = "update Pages set Content = ? where Id = ?";
+//	private static final String SQL_ALL_PAGES = "select Name from Pages";
+//	private static final String SQL_DELETE_PAGE = "delete from Pages where Id = ?";
+//	private SQLClient dbClient;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainVerticle.class);
 
@@ -49,14 +51,14 @@ public class MainVerticle extends AbstractVerticle {
 		Future<Void> future = Future.future();
 
 		// HSQLDB
-//		JsonObject dbClientConfig = new JsonObject().put("url", "jdbc:hsqldb:file:db/wiki")
-//				.put("driver_class", "org.hsqldb.jdbcDriver").put("max_pool_size", 30);
-//		dbClient = JDBCClient.createShared(vertx, dbClientConfig);
+		JsonObject dbClientConfig = new JsonObject().put("url", "jdbc:hsqldb:file:db/wiki")
+				.put("driver_class", "org.hsqldb.jdbcDriver").put("max_pool_size", 30);
+		dbClient = JDBCClient.createShared(vertx, dbClientConfig);
 		
 		// PostgreSQL
-		JsonObject dbClientConfig = new JsonObject().put("host", "127.0.0.1").put("username", "has")
-				.put("password", "has").put("database", "has");
-		dbClient = PostgreSQLClient.createShared(vertx, dbClientConfig);
+//		JsonObject dbClientConfig = new JsonObject().put("host", "127.0.0.1").put("username", "has")
+//				.put("password", "has").put("database", "has");
+//		dbClient = PostgreSQLClient.createShared(vertx, dbClientConfig);
 
 		dbClient.getConnection(ar -> {
 			if (ar.failed()) {
