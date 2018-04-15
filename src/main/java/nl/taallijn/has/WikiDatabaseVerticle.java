@@ -184,7 +184,6 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 	private void savePage(Message<JsonObject> message) {
 		JsonObject request = message.body();
 		JsonArray data = new JsonArray().add(request.getString("markdown")).add(request.getString("id"));
-		LOGGER.debug("savePage: data = {}", data);
 
 		dbClient.updateWithParams(sqlQueries.get(SqlQuery.SAVE_PAGE), data, res -> {
 			if (res.succeeded()) {

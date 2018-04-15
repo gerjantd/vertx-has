@@ -120,7 +120,6 @@ public class HttpServerVerticle extends AbstractVerticle {
 		String title = context.request().getParam("title");
 		JsonObject request = new JsonObject().put("id", context.request().getParam("id")).put("title", title)
 				.put("markdown", context.request().getParam("markdown"));
-		LOGGER.debug("pageUpdateHandler: request = {}", request);
 
 		DeliveryOptions options = new DeliveryOptions();
 		if ("yes".equals(context.request().getParam("newPage"))) {
