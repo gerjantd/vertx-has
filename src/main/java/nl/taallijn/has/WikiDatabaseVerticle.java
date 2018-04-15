@@ -22,12 +22,13 @@ import io.vertx.ext.sql.SQLConnection;
 
 public class WikiDatabaseVerticle extends AbstractVerticle {
 
-	public static final String CONFIG_WIKIDB_JDBC_URL = "wikidb.jdbc.url";
-	public static final String CONFIG_WIKIDB_JDBC_DRIVER_CLASS = "wikidb.jdbc.driver_class";
-	public static final String CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE = "wikidb.jdbc.max_pool_size";
-	public static final String CONFIG_WIKIDB_JDBC_USER = "wikidb.jdbc.user";
-	public static final String CONFIG_WIKIDB_JDBC_PASSWORD = "wikidb.jdbc.password";
-	public static final String CONFIG_WIKIDB_SQL_QUERIES_RESOURCE_FILE = "wikidb.sqlqueries.resource.file";
+//	public static final String CONFIG_WIKIDB_JDBC_URL = "wikidb.jdbc.url";
+//	public static final String CONFIG_WIKIDB_JDBC_DRIVER_CLASS = "wikidb.jdbc.driver_class";
+//	public static final String CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE = "wikidb.jdbc.max_pool_size";
+//	public static final String CONFIG_WIKIDB_JDBC_USER = "wikidb.jdbc.user";
+//	public static final String CONFIG_WIKIDB_JDBC_PASSWORD = "wikidb.jdbc.password";
+//	public static final String CONFIG_WIKIDB_SQL_QUERIES_RESOURCE_FILE = "wikidb.sqlqueries.resource.file";
+	public static final String CONFIG_WIKIDB_RESOURCE_FILE = "wikidb.resource.file";
 
 	public static final String CONFIG_WIKIDB_QUEUE = "wikidb.queue";
 
@@ -38,31 +39,62 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 	}
 
 	private final HashMap<SqlQuery, String> sqlQueries = new HashMap<>();
+	
+//	private static final JsonObject jdbcParameters = new JsonObject();
+	private final JsonObject jdbcParameters = new JsonObject();
 
-	private void loadSqlQueries() throws IOException {
+//	private void loadSqlQueries() throws IOException {
+//
+//		String queriesFile = config().getString(CONFIG_WIKIDB_SQL_QUERIES_RESOURCE_FILE);
+//		InputStream queriesInputStream;
+//		if (queriesFile != null) {
+//			queriesInputStream = new FileInputStream(queriesFile);
+//		} else {
+//			// HSQLDB
+//			queriesInputStream = getClass().getResourceAsStream("/db-queries.properties");
+//			// POSTGRESQL
+//			// queriesInputStream =
+//			// getClass().getResourceAsStream("/db-queries-postgresql.properties");
+//		}
+//
+//		Properties queriesProps = new Properties();
+//		queriesProps.load(queriesInputStream);
+//		queriesInputStream.close();
+//
+//		sqlQueries.put(SqlQuery.CREATE_PAGES_TABLE, queriesProps.getProperty("create-pages-table"));
+//		sqlQueries.put(SqlQuery.ALL_PAGES, queriesProps.getProperty("all-pages"));
+//		sqlQueries.put(SqlQuery.GET_PAGE, queriesProps.getProperty("get-page"));
+//		sqlQueries.put(SqlQuery.CREATE_PAGE, queriesProps.getProperty("create-page"));
+//		sqlQueries.put(SqlQuery.SAVE_PAGE, queriesProps.getProperty("save-page"));
+//		sqlQueries.put(SqlQuery.DELETE_PAGE, queriesProps.getProperty("delete-page"));
+//	}
 
-		String queriesFile = config().getString(CONFIG_WIKIDB_SQL_QUERIES_RESOURCE_FILE);
-		InputStream queriesInputStream;
-		if (queriesFile != null) {
-			queriesInputStream = new FileInputStream(queriesFile);
+	private void loadDbProperties() throws IOException {
+
+		String resourceFile = config().getString(CONFIG_WIKIDB_RESOURCE_FILE);
+		InputStream resourceInputStream;
+		if (resourceFile != null) {
+			resourceInputStream = new FileInputStream(resourceFile);
 		} else {
-			// HSQLDB
-			queriesInputStream = getClass().getResourceAsStream("/db-queries.properties");
-			// POSTGRESQL
-			// queriesInputStream =
-			// getClass().getResourceAsStream("/db-queries-postgresql.properties");
+			resourceInputStream = getClass().getResourceAsStream("/db.properties");
 		}
 
-		Properties queriesProps = new Properties();
-		queriesProps.load(queriesInputStream);
-		queriesInputStream.close();
+		Properties dbProps = new Properties();
+		dbProps.load(resourceInputStream);
+		resourceInputStream.close();
+		
+		jdbcParameters.put("url", dbProps.getProperty("wikidb.jdbc.url"));
+		jdbcParameters.put("driver_class", dbProps.getProperty("wikidb.jdbc.driver_class"));
+		jdbcParameters.put("max_pool_size", Integer.parseInt(dbProps.getProperty("wikidb.jdbc.max_pool_size")));
+		jdbcParameters.put("user", dbProps.getProperty("wikidb.jdbc.user"));
+		jdbcParameters.put("password", dbProps.getProperty("wikidb.jdbc.password"));
 
-		sqlQueries.put(SqlQuery.CREATE_PAGES_TABLE, queriesProps.getProperty("create-pages-table"));
-		sqlQueries.put(SqlQuery.ALL_PAGES, queriesProps.getProperty("all-pages"));
-		sqlQueries.put(SqlQuery.GET_PAGE, queriesProps.getProperty("get-page"));
-		sqlQueries.put(SqlQuery.CREATE_PAGE, queriesProps.getProperty("create-page"));
-		sqlQueries.put(SqlQuery.SAVE_PAGE, queriesProps.getProperty("save-page"));
-		sqlQueries.put(SqlQuery.DELETE_PAGE, queriesProps.getProperty("delete-page"));
+		sqlQueries.put(SqlQuery.CREATE_PAGES_TABLE, dbProps.getProperty("wikidb.sql.create_pages_table"));
+		sqlQueries.put(SqlQuery.ALL_PAGES, dbProps.getProperty("wikidb.sql.all_pages"));
+		sqlQueries.put(SqlQuery.GET_PAGE, dbProps.getProperty("wikidb.sql.get_page"));
+		sqlQueries.put(SqlQuery.CREATE_PAGE, dbProps.getProperty("wikidb.sql.create_page"));
+		sqlQueries.put(SqlQuery.SAVE_PAGE, dbProps.getProperty("wikidb.sql.save_page"));
+		sqlQueries.put(SqlQuery.DELETE_PAGE, dbProps.getProperty("wikidb.sql.delete_page"));
 	}
 
 	private JDBCClient dbClient;
@@ -71,15 +103,18 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 	public void start(Future<Void> startFuture) throws Exception {
 
 		// Note: this uses blocking APIs, but data is small
-		loadSqlQueries();
+		//loadSqlQueries();
+		loadDbProperties();
+		
+		dbClient = JDBCClient.createShared(vertx, jdbcParameters);
 
 		// HSQLDB
-		dbClient = JDBCClient.createShared(vertx, new JsonObject()
-				.put("url", config().getString(CONFIG_WIKIDB_JDBC_URL, "jdbc:hsqldb:file:db/wiki"))
-				.put("driver_class", config().getString(CONFIG_WIKIDB_JDBC_DRIVER_CLASS, "org.hsqldb.jdbcDriver"))
-				.put("max_pool_size", config().getInteger(CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE, 30))
-				.put("user", config().getString(CONFIG_WIKIDB_JDBC_USER, "sa"))
-				.put("password", config().getString(CONFIG_WIKIDB_JDBC_PASSWORD, "")));
+//		dbClient = JDBCClient.createShared(vertx, new JsonObject()
+//				.put("url", config().getString(CONFIG_WIKIDB_JDBC_URL, "jdbc:hsqldb:file:db/wiki"))
+//				.put("driver_class", config().getString(CONFIG_WIKIDB_JDBC_DRIVER_CLASS, "org.hsqldb.jdbcDriver"))
+//				.put("max_pool_size", config().getInteger(CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE, 30))
+//				.put("user", config().getString(CONFIG_WIKIDB_JDBC_USER, "sa"))
+//				.put("password", config().getString(CONFIG_WIKIDB_JDBC_PASSWORD, "")));
 
 		// POSTGRESQL
 		// dbClient = JDBCClient.createShared(vertx, new JsonObject()

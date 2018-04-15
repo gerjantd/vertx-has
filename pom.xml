@@ -12,6 +12,30 @@
 		<vertx.version>3.5.1</vertx.version>
 		<main.verticle>nl.taallijn.has.MainVerticle</main.verticle>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- hsqldb -->
+		<wikidb.jdbc.url>jdbc:hsqldb:file:db/wiki</wikidb.jdbc.url>
+		<wikidb.jdbc.driver_class>org.hsqldb.jdbcDriver</wikidb.jdbc.driver_class>
+		<wikidb.jdbc.max_pool_size>30</wikidb.jdbc.max_pool_size>
+		<wikidb.jdbc.user>sa</wikidb.jdbc.user>
+		<wikidb.jdbc.password></wikidb.jdbc.password>
+		<wikidb.sql.create_pages_table>create table if not exists Pages (Id integer identity primary key, Name varchar(255) unique, Content clob)</wikidb.sql.create_pages_table>
+		<wikidb.sql.get_page>select Id, Content from Pages where Name = ?</wikidb.sql.get_page>
+		<wikidb.sql.create_page>insert into Pages values (NULL, ?, ?)</wikidb.sql.create_page>
+		<wikidb.sql.save_page>update Pages set Content = ? where Id = ?</wikidb.sql.save_page>
+		<wikidb.sql.all_pages>select Name from Pages</wikidb.sql.all_pages>
+		<wikidb.sql.delete_page>delete from Pages where Id = ?</wikidb.sql.delete_page>
+		<!-- postgresql -->
+<!-- 		<wikidb.jdbc.url>jdbc:postgresql://127.0.0.1/has</wikidb.jdbc.url> -->
+<!-- 		<wikidb.jdbc.driver_class>org.postgresql.Driver</wikidb.jdbc.driver_class> -->
+<!-- 		<wikidb.jdbc.max_pool_size>30</wikidb.jdbc.max_pool_size> -->
+<!-- 		<wikidb.jdbc.user>has</wikidb.jdbc.user> -->
+<!-- 		<wikidb.jdbc.password>has</wikidb.jdbc.password> -->
+<!-- 		<wikidb.sql.create_pages_table>CREATE TABLE IF NOT EXISTS Pages (Id serial primary key, Name character varying(255) UNIQUE, Content text); ALTER TABLE Pages OWNER TO has;</wikidb.sql.create_pages_table> -->
+<!-- 		<wikidb.sql.get_page>select Id, Content from Pages where Name = ?</wikidb.sql.get_page> -->
+<!-- 		<wikidb.sql.create_page>insert into Pages (Name, Content) values (?, ?)</wikidb.sql.create_page> -->
+<!-- 		<wikidb.sql.save_page>update Pages set Content = ? where Id = ?</wikidb.sql.save_page> -->
+<!-- 		<wikidb.sql.all_pages>select Name from Pages</wikidb.sql.all_pages> -->
+<!-- 		<wikidb.sql.delete_page>delete from Pages where Id = ?</wikidb.sql.delete_page> -->
 	</properties>
 
 	<dependencyManagement>
@@ -129,7 +153,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
@@ -148,7 +171,22 @@
 					</arguments>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<!-- <version>3.0.2</version> -->
+				<configuration>
+					<escapeString>\</escapeString>
+				</configuration>
+			</plugin>
 		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 	</build>
 
 </project>
