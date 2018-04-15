@@ -256,20 +256,4 @@ public class MainVerticle extends AbstractVerticle {
 		steps.setHandler(startFuture.completer());
 	}
 
-	public void anotherStart(Future<Void> startFuture) throws Exception {
-		Future<Void> steps = prepareDatabase().compose(v -> startHttpServer());
-		steps.setHandler(ar -> {
-			if (ar.succeeded()) {
-				startFuture.complete();
-			} else {
-				startFuture.fail(ar.cause());
-			}
-		});
-	}
-
-	public void originalStart() {
-		vertx.createHttpServer().requestHandler(req -> req.response().end("Coucou Halink Appreciation Society!"))
-				.listen(8080);
-	}
-
 }
