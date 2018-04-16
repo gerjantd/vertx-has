@@ -3,6 +3,7 @@ package nl.taallijn.has;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
+import nl.taallijn.has.database.WikiDatabaseVerticle;
 
 public class MainVerticle extends AbstractVerticle {
 

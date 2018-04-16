@@ -1,4 +1,4 @@
-package nl.taallijn.has;
+package nl.taallijn.has.http;
 
 import java.util.Date;
 

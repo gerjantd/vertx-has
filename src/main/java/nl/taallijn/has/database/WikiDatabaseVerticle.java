@@ -1,4 +1,4 @@
-package nl.taallijn.has;
+package nl.taallijn.has.database;
 
 import java.io.FileInputStream;
 import java.io.IOException;
