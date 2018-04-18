@@ -15,7 +15,11 @@ import io.vertx.serviceproxy.ServiceBinder;
 
 public class WikiDatabaseVerticle extends AbstractVerticle {
 
-	public static final String CONFIG_WIKIDB_JDBC_PARAMETERS_RESOURCE_FILE = "wikidb.jdbc.parameters.resource.file";
+	public static final String CONFIG_WIKIDB_JDBC_URL = "wikidb.jdbc.url";
+	public static final String CONFIG_WIKIDB_JDBC_DRIVER_CLASS = "wikidb.jdbc.driver_class";
+	public static final String CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE = "wikidb.jdbc.max_pool_size";
+	public static final String CONFIG_WIKIDB_JDBC_USER = "wikidb.jdbc.user";
+	public static final String CONFIG_WIKIDB_JDBC_PASSWORD = "wikidb.jdbc.password";
 	public static final String CONFIG_WIKIDB_SQL_QUERIES_RESOURCE_FILE = "wikidb.sql.queries.resource.file";
 	public static final String CONFIG_WIKIDB_QUEUE = "wikidb.queue";
 
@@ -31,50 +35,33 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 		} else {
 			resourceInputStream = getClass().getResourceAsStream(defaultFilename);
 		}
-
-		Properties dbProps = new Properties();
-		dbProps.load(resourceInputStream);
+		Properties props = new Properties();
+		props.load(resourceInputStream);
 		resourceInputStream.close();
-		return dbProps;
-	}
-
-	private JsonObject loadJdbcParameters() throws IOException {
-
-		Properties dbProps = loadResourceFile(CONFIG_WIKIDB_JDBC_PARAMETERS_RESOURCE_FILE,
-				"/db-jdbc-parameters.properties");
-
-		JsonObject jdbcParameters = new JsonObject();
-		jdbcParameters.put("url", dbProps.getProperty("wikidb.jdbc.url"));
-		jdbcParameters.put("driver_class", dbProps.getProperty("wikidb.jdbc.driver_class"));
-		// TODO Can we avoid the cast to Integer?
-		jdbcParameters.put("max_pool_size", Integer.parseInt(dbProps.getProperty("wikidb.jdbc.max_pool_size")));
-		jdbcParameters.put("user", dbProps.getProperty("wikidb.jdbc.user"));
-		jdbcParameters.put("password", dbProps.getProperty("wikidb.jdbc.password"));
-		return jdbcParameters;
+		return props;
 	}
 
 	private HashMap<SqlQuery, String> loadSqlQueries() throws IOException {
-
-		Properties dbProps = loadResourceFile(CONFIG_WIKIDB_SQL_QUERIES_RESOURCE_FILE, "/db-sql-queries.properties");
-
+		Properties props = loadResourceFile(CONFIG_WIKIDB_SQL_QUERIES_RESOURCE_FILE, "/db-sql-queries.properties");
 		HashMap<SqlQuery, String> sqlQueries = new HashMap<>();
-		sqlQueries.put(SqlQuery.CREATE_PAGES_TABLE, dbProps.getProperty("wikidb.sql.create_pages_table"));
-		sqlQueries.put(SqlQuery.ALL_PAGES, dbProps.getProperty("wikidb.sql.all_pages"));
-		sqlQueries.put(SqlQuery.GET_PAGE, dbProps.getProperty("wikidb.sql.get_page"));
-		sqlQueries.put(SqlQuery.CREATE_PAGE, dbProps.getProperty("wikidb.sql.create_page"));
-		sqlQueries.put(SqlQuery.SAVE_PAGE, dbProps.getProperty("wikidb.sql.save_page"));
-		sqlQueries.put(SqlQuery.DELETE_PAGE, dbProps.getProperty("wikidb.sql.delete_page"));
+		sqlQueries.put(SqlQuery.CREATE_PAGES_TABLE, props.getProperty("wikidb.sql.create_pages_table"));
+		sqlQueries.put(SqlQuery.ALL_PAGES, props.getProperty("wikidb.sql.all_pages"));
+		sqlQueries.put(SqlQuery.GET_PAGE, props.getProperty("wikidb.sql.get_page"));
+		sqlQueries.put(SqlQuery.CREATE_PAGE, props.getProperty("wikidb.sql.create_page"));
+		sqlQueries.put(SqlQuery.SAVE_PAGE, props.getProperty("wikidb.sql.save_page"));
+		sqlQueries.put(SqlQuery.DELETE_PAGE, props.getProperty("wikidb.sql.delete_page"));
 		return sqlQueries;
 	}
 
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
-
 		HashMap<SqlQuery, String> sqlQueries = loadSqlQueries();
-		JsonObject jdbcParameters = loadJdbcParameters();
-
-		JDBCClient dbClient = JDBCClient.createShared(vertx, jdbcParameters);
-
+		JDBCClient dbClient = JDBCClient.createShared(vertx, new JsonObject()
+				.put("url", config().getString(CONFIG_WIKIDB_JDBC_URL, "jdbc:hsqldb:file:db/wiki"))
+				.put("driver_class", config().getString(CONFIG_WIKIDB_JDBC_DRIVER_CLASS, "org.hsqldb.jdbcDriver"))
+				.put("max_pool_size", config().getInteger(CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE, 30))
+				.put("user", config().getString(CONFIG_WIKIDB_JDBC_USER, "sa"))
+				.put("password", config().getString(CONFIG_WIKIDB_JDBC_PASSWORD, "")));
 		WikiDatabaseService.create(dbClient, sqlQueries, ready -> {
 			if (ready.succeeded()) {
 				ServiceBinder binder = new ServiceBinder(vertx);
