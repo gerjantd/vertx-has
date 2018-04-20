@@ -17,7 +17,7 @@ import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.serviceproxy.ServiceBinder;
 
 public class WikiDatabaseVerticle extends AbstractVerticle {
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(WikiDatabaseVerticle.class);
 
 	public static final String CONFIG_WIKIDB_JDBC_URL = "wikidb.jdbc.url";
@@ -51,6 +51,7 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 		HashMap<SqlQuery, String> sqlQueries = new HashMap<>();
 		sqlQueries.put(SqlQuery.CREATE_PAGES_TABLE, props.getProperty("wikidb.sql.create_pages_table"));
 		sqlQueries.put(SqlQuery.ALL_PAGES, props.getProperty("wikidb.sql.all_pages"));
+		sqlQueries.put(SqlQuery.ALL_PAGES_DATA, props.getProperty("wikidb.sql.all_pages_data"));
 		sqlQueries.put(SqlQuery.GET_PAGE, props.getProperty("wikidb.sql.get_page"));
 		sqlQueries.put(SqlQuery.CREATE_PAGE, props.getProperty("wikidb.sql.create_page"));
 		sqlQueries.put(SqlQuery.SAVE_PAGE, props.getProperty("wikidb.sql.save_page"));
@@ -61,14 +62,13 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
 		HashMap<SqlQuery, String> sqlQueries = loadSqlQueries();
-		LOGGER.debug("WikiDatabaseVerticle config().getString(CONFIG_WIKIDB_JDBC_URL, = {}", config().getString(CONFIG_WIKIDB_JDBC_URL));	
 		JsonObject dbConfig = new JsonObject()
 				.put("url", config().getString(CONFIG_WIKIDB_JDBC_URL, "jdbc:hsqldb:file:db/wiki"))
 				.put("driver_class", config().getString(CONFIG_WIKIDB_JDBC_DRIVER_CLASS, "org.hsqldb.jdbcDriver"))
 				.put("max_pool_size", config().getInteger(CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE, 30))
 				.put("user", config().getString(CONFIG_WIKIDB_JDBC_USER, "sa"))
 				.put("password", config().getString(CONFIG_WIKIDB_JDBC_PASSWORD, ""));
-		LOGGER.debug("WikiDatabaseVerticle dbConfig = {}", dbConfig.encodePrettily());
+		LOGGER.debug("DB config actually used by WikiDatabaseVerticle = {}", dbConfig.encodePrettily());
 		JDBCClient dbClient = JDBCClient.createShared(vertx, dbConfig);
 		WikiDatabaseService.create(dbClient, sqlQueries, ready -> {
 			if (ready.succeeded()) {

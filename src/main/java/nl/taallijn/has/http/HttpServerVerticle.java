@@ -103,6 +103,8 @@ public class HttpServerVerticle extends AbstractVerticle {
 					fileObject.put("content", page.getString("CONTENT"));
 					filesObject.add(fileObject);
 				});
+				
+				LOGGER.debug("filesObject = {}", filesObject.encodePrettily());
 
 				webClient.post(443, "snippets.glot.io", "/snippets").putHeader("Content-Type", "application/json")
 						.as(BodyCodec.jsonObject()).sendJsonObject(payload, ar -> {
