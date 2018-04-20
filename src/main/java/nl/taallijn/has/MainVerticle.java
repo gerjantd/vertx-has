@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -13,11 +16,14 @@ import nl.taallijn.has.database.WikiDatabaseVerticle;
 
 public class MainVerticle extends AbstractVerticle {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(MainVerticle.class);
+
 	public static final String JDBC_PARAMETERS_RESOURCE_FILE = "/db-jdbc-parameters.properties";
 
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
 		JsonObject dbConfig = loadDbConfig();
+		LOGGER.debug("MainVerticle dbConfig passed to WikiDatabaseVerticle.start = {}", dbConfig.encodePrettily());
 		Future<String> dbVerticleDeployment = Future.future();
 		vertx.deployVerticle(new WikiDatabaseVerticle(), new DeploymentOptions().setConfig(dbConfig),
 				dbVerticleDeployment.completer());
@@ -49,7 +55,7 @@ public class MainVerticle extends AbstractVerticle {
 	private JsonObject loadDbConfig() throws IOException {
 		Properties dbProps = loadResourceFile(JDBC_PARAMETERS_RESOURCE_FILE);
 		JsonObject dbConfig = new JsonObject();
-		dbConfig.put("url", dbProps.getProperty("wikidb.jdbc.url"));
+		dbConfig.put("wikidb.jdbc.url", dbProps.getProperty("wikidb.jdbc.url"));
 		dbConfig.put("driver_class", dbProps.getProperty("wikidb.jdbc.driver_class"));
 		// TODO Can we avoid the cast to Integer?
 		dbConfig.put("max_pool_size", Integer.parseInt(dbProps.getProperty("wikidb.jdbc.max_pool_size")));

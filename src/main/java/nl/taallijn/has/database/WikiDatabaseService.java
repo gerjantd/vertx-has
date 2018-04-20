@@ -1,5 +1,8 @@
 package nl.taallijn.has.database;
 
+import java.util.HashMap;
+import java.util.List;
+
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
@@ -9,10 +12,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 
-import java.util.HashMap;
-
 @ProxyGen
 public interface WikiDatabaseService {
+
+	@Fluent
+	WikiDatabaseService fetchAllPagesData(Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
 	@Fluent
 	WikiDatabaseService fetchAllPages(Handler<AsyncResult<JsonArray>> resultHandler);
