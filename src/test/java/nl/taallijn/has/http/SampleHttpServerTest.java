@@ -10,9 +10,11 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+//@Ignore
 @RunWith(VertxUnitRunner.class)
 public class SampleHttpServerTest {
 

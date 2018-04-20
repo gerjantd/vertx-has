@@ -7,6 +7,9 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
@@ -14,6 +17,8 @@ import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.serviceproxy.ServiceBinder;
 
 public class WikiDatabaseVerticle extends AbstractVerticle {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(WikiDatabaseVerticle.class);
 
 	public static final String CONFIG_WIKIDB_JDBC_URL = "wikidb.jdbc.url";
 	public static final String CONFIG_WIKIDB_JDBC_DRIVER_CLASS = "wikidb.jdbc.driver_class";
@@ -56,12 +61,15 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
 		HashMap<SqlQuery, String> sqlQueries = loadSqlQueries();
-		JDBCClient dbClient = JDBCClient.createShared(vertx, new JsonObject()
+		LOGGER.debug("POST loadSqlQueries");
+		JsonObject dbParams = new JsonObject()
 				.put("url", config().getString(CONFIG_WIKIDB_JDBC_URL, "jdbc:hsqldb:file:db/wiki"))
 				.put("driver_class", config().getString(CONFIG_WIKIDB_JDBC_DRIVER_CLASS, "org.hsqldb.jdbcDriver"))
 				.put("max_pool_size", config().getInteger(CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE, 30))
 				.put("user", config().getString(CONFIG_WIKIDB_JDBC_USER, "sa"))
-				.put("password", config().getString(CONFIG_WIKIDB_JDBC_PASSWORD, "")));
+				.put("password", config().getString(CONFIG_WIKIDB_JDBC_PASSWORD, ""));
+		LOGGER.debug("dbParams = {}", dbParams.encodePrettily());
+		JDBCClient dbClient = JDBCClient.createShared(vertx, dbParams);
 		WikiDatabaseService.create(dbClient, sqlQueries, ready -> {
 			if (ready.succeeded()) {
 				ServiceBinder binder = new ServiceBinder(vertx);

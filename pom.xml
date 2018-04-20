@@ -17,15 +17,14 @@
 				<wikidb.jdbc.max_pool_size>30</wikidb.jdbc.max_pool_size>
 				<wikidb.jdbc.user>has</wikidb.jdbc.user>
 				<wikidb.jdbc.password>has</wikidb.jdbc.password>
-				<wikidb.sql.create_pages_table>CREATE TABLE IF NOT EXISTS Pages (Id
-					serial primary key, Name character varying(255) UNIQUE, Content
-					text); ALTER TABLE Pages OWNER TO has;</wikidb.sql.create_pages_table>
-				<wikidb.sql.get_page>select Id, Content from Pages where Name = ?</wikidb.sql.get_page>
-				<wikidb.sql.create_page>insert into Pages (Name, Content) values (?,
-					?)</wikidb.sql.create_page>
-				<wikidb.sql.save_page>update Pages set Content = ? where Id = ?</wikidb.sql.save_page>
-				<wikidb.sql.all_pages>select Name from Pages</wikidb.sql.all_pages>
-				<wikidb.sql.delete_page>delete from Pages where Id = ?</wikidb.sql.delete_page>
+				<!-- cdata hack to turn formatter off -->
+				<wikidb.sql.create_pages_table><![CDATA[CREATE TABLE IF NOT EXISTS Pages (Id serial primary key, Name character varying(255) UNIQUE, Content text); ALTER TABLE Pages OWNER TO has;]]></wikidb.sql.create_pages_table>
+				<wikidb.sql.get_page><![CDATA[select Id, Content from Pages where Name = ?]]></wikidb.sql.get_page>
+				<wikidb.sql.create_page><![CDATA[insert into Pages (Name, Content) values (?, ?)]]></wikidb.sql.create_page>
+				<wikidb.sql.save_page><![CDATA[update Pages set Content = ? where Id = ?]]></wikidb.sql.save_page>
+				<wikidb.sql.all_pages><![CDATA[select Name from Pages]]></wikidb.sql.all_pages>
+				<wikidb.sql.delete_page><![CDATA[delete from Pages where Id = ?]]></wikidb.sql.delete_page>
+				<!-- formatter on -->
 			</properties>
 			<dependencies>
 				<dependency>
@@ -47,13 +46,14 @@
 		<wikidb.jdbc.max_pool_size>30</wikidb.jdbc.max_pool_size>
 		<wikidb.jdbc.user>sa</wikidb.jdbc.user>
 		<wikidb.jdbc.password></wikidb.jdbc.password>
-		<wikidb.sql.create_pages_table>create table if not exists Pages (Id
-			integer identity primary key, Name varchar(255) unique, Content clob)</wikidb.sql.create_pages_table>
-		<wikidb.sql.get_page>select Id, Content from Pages where Name = ?</wikidb.sql.get_page>
-		<wikidb.sql.create_page>insert into Pages values (NULL, ?, ?)</wikidb.sql.create_page>
-		<wikidb.sql.save_page>update Pages set Content = ? where Id = ?</wikidb.sql.save_page>
-		<wikidb.sql.all_pages>select Name from Pages</wikidb.sql.all_pages>
-		<wikidb.sql.delete_page>delete from Pages where Id = ?</wikidb.sql.delete_page>
+		<!-- cdata hack to turn formatter off -->
+		<wikidb.sql.create_pages_table><![CDATA[create table if not exists Pages (Id integer identity primary key, Name varchar(255) unique, Content clob)]]></wikidb.sql.create_pages_table>
+		<wikidb.sql.get_page><![CDATA[select Id, Content from Pages where Name = ?]]></wikidb.sql.get_page>
+		<wikidb.sql.create_page><![CDATA[insert into Pages values (NULL, ?, ?)]]></wikidb.sql.create_page>
+		<wikidb.sql.save_page><![CDATA[update Pages set Content = ? where Id = ?]]></wikidb.sql.save_page>
+		<wikidb.sql.all_pages><![CDATA[select Name from Pages]]></wikidb.sql.all_pages>
+		<wikidb.sql.delete_page><![CDATA[delete from Pages where Id = ?]]></wikidb.sql.delete_page>
+		<!-- formatteron -->
 	</properties>
 
 	<dependencyManagement>
@@ -233,11 +233,14 @@
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 			</resource>
-			<resource>
+		</resources>
+
+		<testResources>
+			<testResource>
 				<directory>src/test/resources</directory>
 				<filtering>true</filtering>
-			</resource>
-		</resources>
+			</testResource>
+		</testResources>
 	</build>
 
 </project>

@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -14,8 +17,10 @@ import nl.taallijn.has.database.WikiDatabaseVerticle;
 
 public class MainVerticle extends AbstractVerticle {
 
-	public static final String JDBC_PARAMETERS_RESOURCE_FILE = "/db-jdbc-parameters.properties";
+	private static final Logger LOGGER = LoggerFactory.getLogger(MainVerticle.class);
 
+	public static final String JDBC_PARAMETERS_RESOURCE_FILE = "/db-jdbc-parameters.properties";
+	
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
 		JsonObject dbConfig = loadDbConfig();
@@ -40,9 +45,13 @@ public class MainVerticle extends AbstractVerticle {
 	 * Note: this uses blocking APIs, but data is small...
 	 */
 	private Properties loadResourceFile(String filename) throws FileNotFoundException, IOException {
-		InputStream resourceInputStream = new FileInputStream(filename);
+		LOGGER.debug("In loadResourceFile); filename = {}", filename);
+//		InputStream resourceInputStream = new FileInputStream(filename);
+		InputStream resourceInputStream = getClass().getResourceAsStream(filename);
+		LOGGER.debug("In loadResourceFile); resourceInputStream = {}", resourceInputStream);
 		Properties props = new Properties();
 		props.load(resourceInputStream);
+		LOGGER.debug("In loadResourceFile); props = {}", props);
 		resourceInputStream.close();
 		return props;
 	}
