@@ -1,17 +1,16 @@
 package nl.taallijn.has.database;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RunWith(VertxUnitRunner.class)
 public class WikiDatabaseVerticleTest {
@@ -70,7 +69,7 @@ public class WikiDatabaseVerticleTest {
 
 								service.fetchAllPages(context.asyncAssertSuccess(array2 -> {
 									context.assertTrue(array2.isEmpty());
-									async.complete(); // <1>
+									async.complete();
 								}));
 							});
 						}));
