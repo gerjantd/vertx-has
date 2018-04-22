@@ -1,6 +1,8 @@
 package nl.taallijn.has.http;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,13 +95,22 @@ public class HttpServerVerticle extends AbstractVerticle {
 		dbService.fetchAllPagesData(reply -> {
 			if (reply.succeeded()) {
 
+				LOGGER.debug("reply.result.size = {}", reply.result().size());
+
 				JsonArray filesObject = new JsonArray();
 				JsonObject payload = new JsonObject().put("files", filesObject).put("language", "plaintext")
 						.put("title", "vertx-wiki-backup").put("public", true);
-
+				
 				reply.result().forEach(page -> {
+					
+					page.fieldNames().forEach(fieldName -> {
+						LOGGER.debug("page field name = {}", fieldName);
+					});
+					
 					JsonObject fileObject = new JsonObject();
-					fileObject.put("name", page.getString("NAME"));
+					LOGGER.debug("normalised page field name = {}", "NAME");
+					LOGGER.debug("actual page field name = {}", normalisedFieldName(page, "NAME"));
+					fileObject.put("name", page.getString(normalisedFieldName(page, "NAME")));
 					fileObject.put("content", page.getString("CONTENT"));
 					filesObject.add(fileObject);
 				});
@@ -136,6 +147,10 @@ public class HttpServerVerticle extends AbstractVerticle {
 				context.fail(reply.cause());
 			}
 		});
+	}
+
+	private String normalisedFieldName(JsonObject page, String string) {
+		return page.fieldNames().stream().filter(name -> name.toUpperCase().equals(string)).findFirst().get();
 	}
 
 	private void pageRenderingHandler(RoutingContext context) {
