@@ -1,5 +1,12 @@
 package nl.taallijn.has.database;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -8,12 +15,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 
 class WikiDatabaseServiceImpl implements WikiDatabaseService {
 
@@ -26,7 +27,6 @@ class WikiDatabaseServiceImpl implements WikiDatabaseService {
 			Handler<AsyncResult<WikiDatabaseService>> readyHandler) {
 		this.dbClient = dbClient;
 		this.sqlQueries = sqlQueries;
-
 		dbClient.getConnection(ar -> {
 			if (ar.failed()) {
 				LOGGER.error("Could not open a database connection", ar.cause());

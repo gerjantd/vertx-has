@@ -68,7 +68,7 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 				.put("max_pool_size", config().getInteger(CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE, 30))
 				.put("user", config().getString(CONFIG_WIKIDB_JDBC_USER, "sa"))
 				.put("password", config().getString(CONFIG_WIKIDB_JDBC_PASSWORD, ""));
-		LOGGER.debug("DB config actually used by WikiDatabaseVerticle = {}", dbConfig.encodePrettily());
+		LOGGER.debug("dbConfig = {}", dbConfig.encodePrettily());
 		JDBCClient dbClient = JDBCClient.createShared(vertx, dbConfig);
 		WikiDatabaseService.create(dbClient, sqlQueries, ready -> {
 			if (ready.succeeded()) {

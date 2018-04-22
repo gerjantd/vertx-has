@@ -32,11 +32,8 @@ public class HttpServerVerticle extends AbstractVerticle {
 	public static final String CONFIG_WIKIDB_QUEUE = "wikidb.queue";
 
 	private final FreeMarkerTemplateEngine templateEngine = FreeMarkerTemplateEngine.create();
-
 	private static final String EMPTY_PAGE_MARKDOWN = "# A new page\n" + "\n" + "Feel-free to write in Markdown!\n";
-
 	private WikiDatabaseService dbService;
-
 	private WebClient webClient;
 
 	@Override
@@ -44,7 +41,6 @@ public class HttpServerVerticle extends AbstractVerticle {
 
 		String wikiDbQueue = config().getString(CONFIG_WIKIDB_QUEUE, "wikidb.queue");
 		dbService = WikiDatabaseService.createProxy(vertx, wikiDbQueue);
-
 		webClient = WebClient.create(vertx, new WebClientOptions().setSsl(true).setUserAgent("vert-x3"));
 
 		HttpServer server = vertx.createHttpServer();
@@ -92,18 +88,15 @@ public class HttpServerVerticle extends AbstractVerticle {
 	private void backupHandler(RoutingContext context) {
 		dbService.fetchAllPagesData(reply -> {
 			if (reply.succeeded()) {
-
 				JsonArray filesObject = new JsonArray();
 				JsonObject payload = new JsonObject().put("files", filesObject).put("language", "plaintext")
 						.put("title", "vertx-wiki-backup").put("public", true);
-
 				reply.result().forEach(page -> {
 					JsonObject fileObject = new JsonObject();
 					fileObject.put("name", page.getString(actualFieldName(page, "NAME")));
 					fileObject.put("content", page.getString(actualFieldName(page, "CONTENT")));
 					filesObject.add(fileObject);
 				});
-
 				webClient.post(443, "snippets.glot.io", "/snippets").putHeader("Content-Type", "application/json")
 						.as(BodyCodec.jsonObject()).sendJsonObject(payload, ar -> {
 							if (ar.succeeded()) {
@@ -129,7 +122,6 @@ public class HttpServerVerticle extends AbstractVerticle {
 								context.fail(err);
 							}
 						});
-
 			} else {
 				context.fail(reply.cause());
 			}
@@ -144,7 +136,6 @@ public class HttpServerVerticle extends AbstractVerticle {
 		String requestedPage = context.request().getParam("page");
 		dbService.fetchPage(requestedPage, reply -> {
 			if (reply.succeeded()) {
-
 				JsonObject payLoad = reply.result();
 				boolean found = payLoad.getBoolean("found");
 				String rawContent = payLoad.getString("rawContent", EMPTY_PAGE_MARKDOWN);
@@ -163,7 +154,6 @@ public class HttpServerVerticle extends AbstractVerticle {
 						context.fail(ar.cause());
 					}
 				});
-
 			} else {
 				context.fail(reply.cause());
 			}
@@ -181,7 +171,6 @@ public class HttpServerVerticle extends AbstractVerticle {
 				context.fail(reply.cause());
 			}
 		};
-
 		String markdown = context.request().getParam("markdown");
 		if ("yes".equals(context.request().getParam("newPage"))) {
 			dbService.createPage(title, markdown, handler);
