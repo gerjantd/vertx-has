@@ -98,6 +98,31 @@ class WikiDatabaseServiceImpl implements WikiDatabaseService {
 	}
 
 	@Override
+	public WikiDatabaseService fetchPageById(int id, Handler<AsyncResult<JsonObject>> resultHandler) {
+		dbClient.queryWithParams(sqlQueries.get(SqlQuery.GET_PAGE_BY_ID), new JsonArray().add(id), res -> {
+			if (res.succeeded()) {
+				if (res.result().getNumRows() > 0) {
+					JsonObject result = res.result().getRows().get(0);
+					resultHandler.handle(Future.succeededFuture(new JsonObject().put("found", true)
+							.put("id", result.getInteger(actualFieldName(result, "ID")))
+							.put("name", result.getString(actualFieldName(result, "NAME")))
+							.put("content", result.getString(actualFieldName(result, "CONTENT")))));
+				} else {
+					resultHandler.handle(Future.succeededFuture(new JsonObject().put("found", false)));
+				}
+			} else {
+				LOGGER.error("Database query error", res.cause());
+				resultHandler.handle(Future.failedFuture(res.cause()));
+			}
+		});
+		return this;
+	}
+
+	private String actualFieldName(JsonObject page, String string) {
+		return page.fieldNames().stream().filter(name -> name.toUpperCase().equals(string)).findFirst().get();
+	}
+
+	@Override
 	public WikiDatabaseService createPage(String title, String markdown, Handler<AsyncResult<Void>> resultHandler) {
 		JsonArray data = new JsonArray().add(title).add(markdown);
 		dbClient.updateWithParams(sqlQueries.get(SqlQuery.CREATE_PAGE), data, res -> {

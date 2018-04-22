@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
@@ -25,6 +26,7 @@
 				<wikidb.sql.delete_page><![CDATA[delete from Pages where Id = ?]]></wikidb.sql.delete_page>
 				<wikidb.sql.all_pages><![CDATA[select Name from Pages]]></wikidb.sql.all_pages>
 				<wikidb.sql.all_pages_data><![CDATA[select * from Pages]]></wikidb.sql.all_pages_data>
+				<wikidb.sql.get-page-by-id><![CDATA[select * from Pages where Id = ?]]></wikidb.sql.get-page-by-id>
 				<!-- formatter on -->
 			</properties>
 			<dependencies>
@@ -55,6 +57,7 @@
 		<wikidb.sql.delete_page><![CDATA[delete from Pages where Id = ?]]></wikidb.sql.delete_page>
 		<wikidb.sql.all_pages><![CDATA[select Name from Pages]]></wikidb.sql.all_pages>
 		<wikidb.sql.all_pages_data><![CDATA[select * from Pages]]></wikidb.sql.all_pages_data>
+		<wikidb.sql.get-page-by-id><![CDATA[select * from Pages where Id = ?]]></wikidb.sql.get-page-by-id>
 		<!-- formatter on -->
 	</properties>
 

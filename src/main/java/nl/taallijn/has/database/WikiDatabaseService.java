@@ -25,6 +25,9 @@ public interface WikiDatabaseService {
 	WikiDatabaseService fetchPage(String name, Handler<AsyncResult<JsonObject>> resultHandler);
 
 	@Fluent
+	WikiDatabaseService fetchPageById(int id, Handler<AsyncResult<JsonObject>> resultHandler);
+
+	@Fluent
 	WikiDatabaseService createPage(String title, String markdown, Handler<AsyncResult<Void>> resultHandler);
 
 	@Fluent
