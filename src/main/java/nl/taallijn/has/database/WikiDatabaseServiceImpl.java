@@ -118,8 +118,11 @@ class WikiDatabaseServiceImpl implements WikiDatabaseService {
 		return this;
 	}
 
-	private String actualFieldName(JsonObject page, String string) {
-		return page.fieldNames().stream().filter(name -> name.toUpperCase().equals(string)).findFirst().get();
+	private String actualFieldName(JsonObject jsonObject, String normalisedFieldName) {
+		LOGGER.debug("normalised page field name = {}", normalisedFieldName);
+		String actual = jsonObject.fieldNames().stream().filter(name -> name.toUpperCase().equals(normalisedFieldName)).findFirst().get();
+		LOGGER.debug("actual page field name = {}", actual);
+		return actual; 
 	}
 
 	@Override
