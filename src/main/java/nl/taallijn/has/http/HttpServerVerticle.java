@@ -15,8 +15,10 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.client.HttpResponse;
@@ -43,8 +45,8 @@ public class HttpServerVerticle extends AbstractVerticle {
 		String wikiDbQueue = config().getString(CONFIG_WIKIDB_QUEUE, "wikidb.queue");
 		dbService = WikiDatabaseService.createProxy(vertx, wikiDbQueue);
 		webClient = WebClient.create(vertx, new WebClientOptions().setSsl(true).setUserAgent("vert-x3"));
-
-		HttpServer server = vertx.createHttpServer();
+		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setSsl(true)
+				.setKeyStoreOptions(new JksOptions().setPath("server-keystore.jks").setPassword("secret")));
 
 		Router router = Router.router(vertx);
 		router.get("/").handler(this::indexHandler);
@@ -169,9 +171,8 @@ public class HttpServerVerticle extends AbstractVerticle {
 			JsonObject response = new JsonObject();
 			if (reply.succeeded()) {
 				List<JsonObject> pages = reply.result().stream()
-						.map(obj -> new JsonObject()
-								.put("id", obj.getInteger(actualFieldName(obj, "ID")))
-								.put("name", obj.getString(actualFieldName(obj, "NAME"))))
+						.map(obj -> new JsonObject().put("id", obj.getInteger(actualFieldName(obj, "ID"))).put("name",
+								obj.getString(actualFieldName(obj, "NAME"))))
 						.collect(Collectors.toList());
 				response.put("success", true).put("pages", pages);
 				context.response().setStatusCode(200);
@@ -249,7 +250,8 @@ public class HttpServerVerticle extends AbstractVerticle {
 	}
 
 	private String actualFieldName(JsonObject jsonObject, String normalisedFieldName) {
-		return jsonObject.fieldNames().stream().filter(name -> name.toUpperCase().equals(normalisedFieldName)).findFirst().get();
+		return jsonObject.fieldNames().stream().filter(name -> name.toUpperCase().equals(normalisedFieldName))
+				.findFirst().get();
 	}
 
 	private void pageRenderingHandler(RoutingContext context) {
