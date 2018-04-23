@@ -30,10 +30,8 @@ import nl.taallijn.has.database.WikiDatabaseService;
 public class HttpServerVerticle extends AbstractVerticle {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
-
 	public static final String CONFIG_HTTP_SERVER_PORT = "http.server.port";
 	public static final String CONFIG_WIKIDB_QUEUE = "wikidb.queue";
-
 	private final FreeMarkerTemplateEngine templateEngine = FreeMarkerTemplateEngine.create();
 	private static final String EMPTY_PAGE_MARKDOWN = "# A new page\n" + "\n" + "Feel-free to write in Markdown!\n";
 	private WikiDatabaseService dbService;
@@ -171,7 +169,6 @@ public class HttpServerVerticle extends AbstractVerticle {
 			JsonObject response = new JsonObject();
 			if (reply.succeeded()) {
 				List<JsonObject> pages = reply.result().stream()
-//						.map(obj -> new JsonObject().put("id", obj.getInteger("ID")).put("name", obj.getString("NAME")))
 						.map(obj -> new JsonObject()
 								.put("id", obj.getInteger(actualFieldName(obj, "ID")))
 								.put("name", obj.getString(actualFieldName(obj, "NAME"))))
@@ -252,15 +249,8 @@ public class HttpServerVerticle extends AbstractVerticle {
 	}
 
 	private String actualFieldName(JsonObject jsonObject, String normalisedFieldName) {
-		LOGGER.debug("normalised page field name = {}", normalisedFieldName);
-		String actual = jsonObject.fieldNames().stream().filter(name -> name.toUpperCase().equals(normalisedFieldName)).findFirst().get();
-		LOGGER.debug("actual page field name = {}", actual);
-		return actual; 
+		return jsonObject.fieldNames().stream().filter(name -> name.toUpperCase().equals(normalisedFieldName)).findFirst().get();
 	}
-
-//	private String actualFieldName(JsonObject page, String string) {
-//		return page.fieldNames().stream().filter(name -> name.toUpperCase().equals(string)).findFirst().get();
-//	}
 
 	private void pageRenderingHandler(RoutingContext context) {
 		String requestedPage = context.request().getParam("page");
@@ -275,7 +265,6 @@ public class HttpServerVerticle extends AbstractVerticle {
 				context.put("rawContent", rawContent);
 				context.put("content", Processor.process(rawContent));
 				context.put("timestamp", new Date().toString());
-
 				templateEngine.render(context, "templates", "/page.ftl", ar -> {
 					if (ar.succeeded()) {
 						context.response().putHeader("Content-Type", "text/html");

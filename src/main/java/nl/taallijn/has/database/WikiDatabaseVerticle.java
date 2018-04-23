@@ -19,7 +19,6 @@ import io.vertx.serviceproxy.ServiceBinder;
 public class WikiDatabaseVerticle extends AbstractVerticle {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(WikiDatabaseVerticle.class);
-
 	public static final String CONFIG_WIKIDB_JDBC_URL = "wikidb.jdbc.url";
 	public static final String CONFIG_WIKIDB_JDBC_DRIVER_CLASS = "wikidb.jdbc.driver_class";
 	public static final String CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE = "wikidb.jdbc.max_pool_size";
@@ -56,7 +55,7 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 		sqlQueries.put(SqlQuery.CREATE_PAGE, props.getProperty("wikidb.sql.create_page"));
 		sqlQueries.put(SqlQuery.SAVE_PAGE, props.getProperty("wikidb.sql.save_page"));
 		sqlQueries.put(SqlQuery.DELETE_PAGE, props.getProperty("wikidb.sql.delete_page"));
-	    sqlQueries.put(SqlQuery.GET_PAGE_BY_ID, props.getProperty("wikidb.sql.get-page-by-id"));
+		sqlQueries.put(SqlQuery.GET_PAGE_BY_ID, props.getProperty("wikidb.sql.get-page-by-id"));
 		return sqlQueries;
 	}
 
@@ -69,14 +68,15 @@ public class WikiDatabaseVerticle extends AbstractVerticle {
 				.put("max_pool_size", config().getInteger(CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE, 30))
 				.put("user", config().getString(CONFIG_WIKIDB_JDBC_USER, "sa"))
 				.put("password", config().getString(CONFIG_WIKIDB_JDBC_PASSWORD, ""));
-		LOGGER.debug("dbConfig = {}", dbConfig.encodePrettily());
 		JDBCClient dbClient = JDBCClient.createShared(vertx, dbConfig);
 		WikiDatabaseService.create(dbClient, sqlQueries, ready -> {
 			if (ready.succeeded()) {
 				ServiceBinder binder = new ServiceBinder(vertx);
 				binder.setAddress(CONFIG_WIKIDB_QUEUE).register(WikiDatabaseService.class, ready.result());
+				LOGGER.debug("WikiDatabaseService created with dbConfig = {}", dbConfig.encodePrettily());
 				startFuture.complete();
 			} else {
+				LOGGER.debug("Failed to create WikiDatabaseService with dbConfig = {}", dbConfig.encodePrettily());
 				startFuture.fail(ready.cause());
 			}
 		});

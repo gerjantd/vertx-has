@@ -19,7 +19,6 @@ import io.vertx.ext.sql.SQLConnection;
 class WikiDatabaseServiceImpl implements WikiDatabaseService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(WikiDatabaseServiceImpl.class);
-
 	private final HashMap<SqlQuery, String> sqlQueries;
 	private final JDBCClient dbClient;
 
@@ -119,10 +118,8 @@ class WikiDatabaseServiceImpl implements WikiDatabaseService {
 	}
 
 	private String actualFieldName(JsonObject jsonObject, String normalisedFieldName) {
-		LOGGER.debug("normalised page field name = {}", normalisedFieldName);
-		String actual = jsonObject.fieldNames().stream().filter(name -> name.toUpperCase().equals(normalisedFieldName)).findFirst().get();
-		LOGGER.debug("actual page field name = {}", actual);
-		return actual; 
+		return jsonObject.fieldNames().stream().filter(name -> name.toUpperCase().equals(normalisedFieldName))
+				.findFirst().get();
 	}
 
 	@Override

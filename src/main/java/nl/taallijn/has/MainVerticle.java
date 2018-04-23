@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -12,12 +15,14 @@ import io.vertx.core.json.JsonObject;
 import nl.taallijn.has.database.WikiDatabaseVerticle;
 
 public class MainVerticle extends AbstractVerticle {
-
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(MainVerticle.class);
 	private static final String JDBC_PARAMETERS_RESOURCE_FILE = "/db-jdbc-parameters.properties";
 
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
 		JsonObject dbConfig = loadDbConfig();
+		LOGGER.debug("Loaded dbConfig = {}", dbConfig.encodePrettily());
 		Future<String> dbVerticleDeployment = Future.future();
 		vertx.deployVerticle(new WikiDatabaseVerticle(), new DeploymentOptions().setConfig(dbConfig),
 				dbVerticleDeployment.completer());
