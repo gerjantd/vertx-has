@@ -2,12 +2,14 @@ package nl.taallijn.has.http;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
@@ -20,6 +22,7 @@ import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.codec.BodyCodec;
 import nl.taallijn.has.database.WikiDatabaseVerticle;
 
+//@Ignore
 @RunWith(VertxUnitRunner.class)
 public class ApiTest {
 
@@ -39,6 +42,10 @@ public class ApiTest {
 
 		vertx.deployVerticle(new HttpServerVerticle(), context.asyncAssertSuccess());
 
+		// http
+		// WebClient webClient = WebClient.create(vertx);
+
+		// https
 		webClient = WebClient.create(vertx, new WebClientOptions()
 				.setDefaultHost("localhost")
 				.setDefaultPort(8080)
@@ -50,6 +57,21 @@ public class ApiTest {
 	@After
 	public void finish(TestContext context) {
 		vertx.close(context.asyncAssertSuccess());
+	}
+	
+	@Test
+	public void start_http_server(TestContext context) {
+		Async async = context.async();
+
+		webClient.get(8080, "localhost", "/").send(ar -> {
+			if (ar.succeeded()) {
+				HttpResponse<Buffer> response = ar.result();
+				context.assertEquals("<!DOCTYPE ht", response.body().toString().substring(0, 12));
+				async.complete();
+			} else {
+				async.resolve(Future.failedFuture(ar.cause()));
+			}
+		});
 	}
 
 	@Test

@@ -2,6 +2,7 @@ package nl.taallijn.has.http;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -14,6 +15,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 
+//@Ignore
 @RunWith(VertxUnitRunner.class)
 public class SampleHttpServerTest {
 
