@@ -18,6 +18,18 @@ import io.vertx.ext.jdbc.JDBCClient;
 @VertxGen
 public interface WikiDatabaseService {
 
+	@GenIgnore
+	static WikiDatabaseService create(JDBCClient dbClient, HashMap<SqlQuery, String> sqlQueries,
+			Handler<AsyncResult<WikiDatabaseService>> readyHandler) {
+		return new WikiDatabaseServiceImpl(dbClient, sqlQueries, readyHandler);
+	}
+
+	@GenIgnore
+	static nl.taallijn.has.database.reactivex.WikiDatabaseService createProxy(Vertx vertx, String address) {
+		return new nl.taallijn.has.database.reactivex.WikiDatabaseService(
+				new WikiDatabaseServiceVertxEBProxy(vertx, address));
+	}
+
 	@Fluent
 	WikiDatabaseService fetchAllPagesData(Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
@@ -38,17 +50,5 @@ public interface WikiDatabaseService {
 
 	@Fluent
 	WikiDatabaseService deletePage(int id, Handler<AsyncResult<Void>> resultHandler);
-
-	@GenIgnore
-	static WikiDatabaseService create(JDBCClient dbClient, HashMap<SqlQuery, String> sqlQueries,
-			Handler<AsyncResult<WikiDatabaseService>> readyHandler) {
-		return new WikiDatabaseServiceImpl(dbClient, sqlQueries, readyHandler);
-	}
-
-	@GenIgnore
-	static nl.taallijn.has.database.reactivex.WikiDatabaseService createProxy(Vertx vertx, String address) {
-		return new nl.taallijn.has.database.reactivex.WikiDatabaseService(
-				new WikiDatabaseServiceVertxEBProxy(vertx, address));
-	}
 
 }

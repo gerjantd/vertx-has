@@ -48,7 +48,7 @@ import io.vertx.ext.web.client.WebClientOptions;
 //import io.vertx.ext.web.handler.UserSessionHandler;
 //import io.vertx.ext.web.sstore.LocalSessionStore;
 //import io.vertx.ext.web.templ.FreeMarkerTemplateEngine;
-import nl.taallijn.has.database.WikiDatabaseService;
+import nl.taallijn.has.database.reactivex.WikiDatabaseService;
 
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.http.HttpServer;
@@ -79,7 +79,7 @@ public class HttpServerVerticle extends AbstractVerticle {
 	public void start(Future<Void> startFuture) throws Exception {
 
 		String wikiDbQueue = config().getString(CONFIG_WIKIDB_QUEUE, "wikidb.queue");
-		dbService = WikiDatabaseService.createProxy(vertx.getDelegate(), wikiDbQueue);
+		dbService = nl.taallijn.has.database.WikiDatabaseService.createProxy(vertx.getDelegate(), wikiDbQueue);
 		webClient = WebClient.create(vertx, new WebClientOptions().setSsl(true).setUserAgent("vert-x3"));
 		HttpServer server = vertx.createHttpServer(new HttpServerOptions().setSsl(true)
 				.setKeyStoreOptions(new JksOptions().setPath("server-keystore.jks").setPassword("secret")));

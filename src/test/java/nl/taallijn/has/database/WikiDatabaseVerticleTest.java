@@ -13,6 +13,8 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
+import nl.taallijn.has.database.reactivex.WikiDatabaseService;
+
 //@Ignore
 @RunWith(VertxUnitRunner.class)
 public class WikiDatabaseVerticleTest {
@@ -29,7 +31,7 @@ public class WikiDatabaseVerticleTest {
 				.put(WikiDatabaseVerticle.CONFIG_WIKIDB_JDBC_MAX_POOL_SIZE, 4);
 
 		vertx.deployVerticle(new WikiDatabaseVerticle(), new DeploymentOptions().setConfig(conf),
-				context.asyncAssertSuccess(id -> service = WikiDatabaseService.createProxy(vertx,
+				context.asyncAssertSuccess(id -> service = nl.taallijn.has.database.WikiDatabaseService.createProxy(vertx,
 						WikiDatabaseVerticle.CONFIG_WIKIDB_QUEUE)));
 	}
 
