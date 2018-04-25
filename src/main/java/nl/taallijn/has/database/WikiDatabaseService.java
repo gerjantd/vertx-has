@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
+import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -13,6 +15,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 
 @ProxyGen
+@VertxGen
 public interface WikiDatabaseService {
 
 	@Fluent
@@ -36,13 +39,16 @@ public interface WikiDatabaseService {
 	@Fluent
 	WikiDatabaseService deletePage(int id, Handler<AsyncResult<Void>> resultHandler);
 
+	@GenIgnore
 	static WikiDatabaseService create(JDBCClient dbClient, HashMap<SqlQuery, String> sqlQueries,
 			Handler<AsyncResult<WikiDatabaseService>> readyHandler) {
 		return new WikiDatabaseServiceImpl(dbClient, sqlQueries, readyHandler);
 	}
 
-	static WikiDatabaseService createProxy(Vertx vertx, String address) {
-		return new WikiDatabaseServiceVertxEBProxy(vertx, address);
+	@GenIgnore
+	static nl.taallijn.has.database.reactivex.WikiDatabaseService createProxy(Vertx vertx, String address) {
+		return new nl.taallijn.has.database.reactivex.WikiDatabaseService(
+				new WikiDatabaseServiceVertxEBProxy(vertx, address));
 	}
 
 }
