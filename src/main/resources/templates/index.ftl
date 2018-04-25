@@ -39,7 +39,7 @@
       </div>
     <#else>
       <p>
-        <a class="btn btn-outline-secondary btn-sm" href="/backup" role="button" aria-pressed="true">Backup</a>
+        <a class="btn btn-outline-secondary btn-sm" href="/action/backup" role="button" aria-pressed="true">Backup</a>
       </p>
     </#if>
   </#if>
