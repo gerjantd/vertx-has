@@ -299,8 +299,8 @@ public class HttpServerVerticle extends AbstractVerticle {
 					.put("title", "vertx-wiki-backup").put("public", true);
 			pages.forEach(page -> {
 				JsonObject fileObject = new JsonObject();
-				fileObject.put("name", page.getString("NAME"));
-				fileObject.put("content", page.getString("CONTENT"));
+				fileObject.put("name", page.getString(actualFieldName(page, "NAME")));
+				fileObject.put("content", page.getString(actualFieldName(page, "CONTENT")));
 				filesObject.add(fileObject);
 			});
 			return payload;
