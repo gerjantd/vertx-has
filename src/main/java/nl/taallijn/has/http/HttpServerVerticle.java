@@ -12,6 +12,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.bridge.PermittedOptions;
+import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.http.HttpServer;
 import io.vertx.reactivex.ext.web.Router;
@@ -20,6 +22,7 @@ import io.vertx.reactivex.ext.web.handler.BodyHandler;
 import io.vertx.reactivex.ext.web.handler.CookieHandler;
 import io.vertx.reactivex.ext.web.handler.SessionHandler;
 import io.vertx.reactivex.ext.web.handler.StaticHandler;
+import io.vertx.reactivex.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.reactivex.ext.web.sstore.LocalSessionStore;
 import nl.taallijn.has.database.reactivex.WikiDatabaseService;
 
@@ -42,6 +45,18 @@ public class HttpServerVerticle extends AbstractVerticle {
 		router.route().handler(CookieHandler.create());
 		router.route().handler(BodyHandler.create());
 		router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
+
+		SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
+		BridgeOptions bridgeOptions = new BridgeOptions()
+				.addInboundPermitted(new PermittedOptions().setAddress("app.markdown"))
+				.addOutboundPermitted(new PermittedOptions().setAddress("page.saved"));
+		sockJSHandler.bridge(bridgeOptions);
+		router.route("/eventbus/*").handler(sockJSHandler);
+
+		vertx.eventBus().<String>consumer("app.markdown", msg -> {
+			String html = Processor.process(msg.body());
+			msg.reply(html);
+		});
 
 		router.get("/app/*").handler(StaticHandler.create().setCachingEnabled(false));
 		router.get("/").handler(context -> context.reroute("/app/index.html"));
@@ -80,8 +95,10 @@ public class HttpServerVerticle extends AbstractVerticle {
 		if (!validateJsonPageDocument(context, page, "markdown")) {
 			return;
 		}
-		dbService.rxSavePage(id, page.getString("markdown")).subscribe(() -> apiResponse(context, 200, null, null),
-				t -> apiFailure(context, t));
+		dbService.rxSavePage(id, page.getString("markdown")).doOnComplete(() -> {
+			JsonObject event = new JsonObject().put("id", id).put("client", page.getString("client"));
+			vertx.eventBus().publish("page.saved", event);
+		}).subscribe(() -> apiResponse(context, 200, null, null), t -> apiFailure(context, t));
 	}
 
 	private void apiCreatePage(RoutingContext context) {

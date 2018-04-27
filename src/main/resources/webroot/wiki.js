@@ -1,5 +1,16 @@
 'use strict';
 
+//Adapted from https://stackoverflow.com/a/8809472/2133695
+//Not a perfect GUID generator but good enough for the purpose of this demo
+function generateUUID() {
+var d = new Date().getTime();
+return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+ var r = (d + Math.random() * 16) % 16 | 0;
+ d = Math.floor(d / 16);
+ return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+});
+}
+
 angular.module("wikiApp", [])
   .controller("WikiController", ["$scope", "$http", "$timeout", function ($scope, $http, $timeout) {
 
@@ -105,10 +116,30 @@ angular.module("wikiApp", [])
       }
       markdownRenderingPromise = $timeout(function() {
         markdownRenderingPromise = null;
-        $http.post("/app/markdown", text).then(function(response) {
-          $scope.updateRendering(response.data);
-        });
+        eb.send("app.markdown", text, function (err, reply) {
+            if (err === null) {
+              $scope.$apply(function () {
+                $scope.updateRendering(reply.body);
+              });
+            } else {
+              console.warn("Error rendering Markdown content: " + JSON.stringify(err));
+            }
+          });
       }, 300);
     });
+
+    var eb = new EventBus(window.location.protocol + "//" + window.location.host + "/eventbus");
+    var clientUuid = generateUUID();
+    eb.onopen = function () {
+      eb.registerHandler("page.saved", function (error, message) {
+        if (message.body
+          && $scope.pageId === message.body.id
+          && clientUuid !== message.body.client) {
+          $scope.$apply(function () {
+            $scope.pageModified = true;
+          });
+        }
+      });
+    };
 
   }]);
