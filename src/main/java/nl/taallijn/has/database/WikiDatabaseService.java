@@ -18,37 +18,37 @@ import io.vertx.ext.jdbc.JDBCClient;
 @VertxGen
 public interface WikiDatabaseService {
 
-	@GenIgnore
-	static WikiDatabaseService create(JDBCClient dbClient, HashMap<SqlQuery, String> sqlQueries,
-			Handler<AsyncResult<WikiDatabaseService>> readyHandler) {
-		return new WikiDatabaseServiceImpl(dbClient, sqlQueries, readyHandler);
-	}
+  @GenIgnore
+  static WikiDatabaseService create(JDBCClient dbClient, HashMap<SqlQuery, String> sqlQueries,
+      Handler<AsyncResult<WikiDatabaseService>> readyHandler) {
+    return new WikiDatabaseServiceImpl(dbClient, sqlQueries, readyHandler);
+  }
 
-	@GenIgnore
-	static nl.taallijn.has.database.reactivex.WikiDatabaseService createProxy(Vertx vertx, String address) {
-		return new nl.taallijn.has.database.reactivex.WikiDatabaseService(
-				new WikiDatabaseServiceVertxEBProxy(vertx, address));
-	}
+  @GenIgnore
+  static nl.taallijn.has.database.reactivex.WikiDatabaseService createProxy(Vertx vertx, String address) {
+    return new nl.taallijn.has.database.reactivex.WikiDatabaseService(
+        new WikiDatabaseServiceVertxEBProxy(vertx, address));
+  }
 
-	@Fluent
-	WikiDatabaseService fetchAllPagesData(Handler<AsyncResult<List<JsonObject>>> resultHandler);
+  @Fluent
+  WikiDatabaseService fetchAllPagesData(Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
-	@Fluent
-	WikiDatabaseService fetchAllPages(Handler<AsyncResult<JsonArray>> resultHandler);
+  @Fluent
+  WikiDatabaseService fetchAllPages(Handler<AsyncResult<JsonArray>> resultHandler);
 
-	@Fluent
-	WikiDatabaseService fetchPage(String name, Handler<AsyncResult<JsonObject>> resultHandler);
+  @Fluent
+  WikiDatabaseService fetchPage(String name, Handler<AsyncResult<JsonObject>> resultHandler);
 
-	@Fluent
-	WikiDatabaseService fetchPageById(int id, Handler<AsyncResult<JsonObject>> resultHandler);
+  @Fluent
+  WikiDatabaseService fetchPageById(int id, Handler<AsyncResult<JsonObject>> resultHandler);
 
-	@Fluent
-	WikiDatabaseService createPage(String title, String markdown, Handler<AsyncResult<Void>> resultHandler);
+  @Fluent
+  WikiDatabaseService createPage(String title, String markdown, Handler<AsyncResult<Void>> resultHandler);
 
-	@Fluent
-	WikiDatabaseService savePage(int id, String markdown, Handler<AsyncResult<Void>> resultHandler);
+  @Fluent
+  WikiDatabaseService savePage(int id, String markdown, Handler<AsyncResult<Void>> resultHandler);
 
-	@Fluent
-	WikiDatabaseService deletePage(int id, Handler<AsyncResult<Void>> resultHandler);
+  @Fluent
+  WikiDatabaseService deletePage(int id, Handler<AsyncResult<Void>> resultHandler);
 
 }

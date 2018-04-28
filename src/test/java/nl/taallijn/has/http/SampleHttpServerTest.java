@@ -19,39 +19,39 @@ import io.vertx.ext.web.client.WebClient;
 @RunWith(VertxUnitRunner.class)
 public class SampleHttpServerTest {
 
-	private Vertx vertx;
+  private Vertx vertx;
 
-	@Before
-	public void prepare() {
-		vertx = Vertx.vertx();
-	}
+  @Before
+  public void prepare() {
+    vertx = Vertx.vertx();
+  }
 
-	@After
-	public void finish(TestContext context) {
-		vertx.close(context.asyncAssertSuccess());
-	}
+  @After
+  public void finish(TestContext context) {
+    vertx.close(context.asyncAssertSuccess());
+  }
 
-	@Test
-	public void start_http_server(TestContext context) {
-		Async async = context.async();
+  @Test
+  public void start_http_server(TestContext context) {
+    Async async = context.async();
 
-		vertx.createHttpServer().requestHandler(req -> req.response().putHeader("Content-Type", "text/plain").end("Ok"))
-				.listen(8080, context.asyncAssertSuccess(server -> {
+    vertx.createHttpServer().requestHandler(req -> req.response().putHeader("Content-Type", "text/plain").end("Ok"))
+        .listen(8080, context.asyncAssertSuccess(server -> {
 
-					WebClient webClient = WebClient.create(vertx);
+          WebClient webClient = WebClient.create(vertx);
 
-					webClient.get(8080, "localhost", "/").send(ar -> {
-						if (ar.succeeded()) {
-							HttpResponse<Buffer> response = ar.result();
-							context.assertTrue(response.headers().contains("Content-Type"));
-							context.assertEquals("text/plain", response.getHeader("Content-Type"));
-							context.assertEquals("Ok", response.body().toString());
-							async.complete();
-						} else {
-							async.resolve(Future.failedFuture(ar.cause()));
-						}
-					});
-				}));
-	}
+          webClient.get(8080, "localhost", "/").send(ar -> {
+            if (ar.succeeded()) {
+              HttpResponse<Buffer> response = ar.result();
+              context.assertTrue(response.headers().contains("Content-Type"));
+              context.assertEquals("text/plain", response.getHeader("Content-Type"));
+              context.assertEquals("Ok", response.body().toString());
+              async.complete();
+            } else {
+              async.resolve(Future.failedFuture(ar.cause()));
+            }
+          });
+        }));
+  }
 
 }
