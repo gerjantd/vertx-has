@@ -37,6 +37,33 @@
 				</dependency>
 			</dependencies>
 		</profile>
+		<profile>
+			<id>postgresql_docker</id>
+			<properties>
+				<wikidb.jdbc.url>jdbc:postgresql://127.0.0.1:15432/db</wikidb.jdbc.url>
+				<wikidb.jdbc.driver_class>org.postgresql.Driver</wikidb.jdbc.driver_class>
+				<wikidb.jdbc.max_pool_size>30</wikidb.jdbc.max_pool_size>
+				<wikidb.jdbc.user>user</wikidb.jdbc.user>
+				<wikidb.jdbc.password>pass</wikidb.jdbc.password>
+				<!-- cdata hack to turn formatter off -->
+				<wikidb.sql.create_pages_table><![CDATA[CREATE TABLE IF NOT EXISTS Pages (Id serial primary key, Name character varying(255) UNIQUE, Content text);]]></wikidb.sql.create_pages_table>
+				<wikidb.sql.get_page><![CDATA[select Id, Content from Pages where Name = ?]]></wikidb.sql.get_page>
+				<wikidb.sql.create_page><![CDATA[insert into Pages (Name, Content) values (?, ?)]]></wikidb.sql.create_page>
+				<wikidb.sql.save_page><![CDATA[update Pages set Content = ? where Id = ?]]></wikidb.sql.save_page>
+				<wikidb.sql.delete_page><![CDATA[delete from Pages where Id = ?]]></wikidb.sql.delete_page>
+				<wikidb.sql.all_pages><![CDATA[select Name from Pages]]></wikidb.sql.all_pages>
+				<wikidb.sql.all_pages_data><![CDATA[select * from Pages]]></wikidb.sql.all_pages_data>
+				<wikidb.sql.get-page-by-id><![CDATA[select * from Pages where Id = ?]]></wikidb.sql.get-page-by-id>
+				<!-- formatter on -->
+			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>org.postgresql</groupId>
+					<artifactId>postgresql</artifactId>
+					<version>42.2.2</version>
+				</dependency>
+			</dependencies>
+		</profile>
 	</profiles>
 
 	<properties>
